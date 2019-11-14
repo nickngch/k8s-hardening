@@ -1,0 +1,74 @@
+---
+- name: 1.5.7 Ensure that a unique Certificate Authority is used for etcd (Not Scored)
+  debug: msg="*** Manually setup the cert"
+  tags:
+    - section1.5.7
+    - master
+    - notscored
+    - level2
+
+- name: 1.6.3 Create network segmentation using Network Policies (Not Scored)
+  debug: msg="***Follow the documentation and create NetworkPolicy objects as you need them.(will based on iptables)"
+  tags:
+    - section1.6.3
+    - master
+    - notscored
+    - level2
+
+- name: 1.6.4 Ensure that the seccomp profile is set to docker/default in your pod definitions (Not Scored)
+  debug: msg="***We will not enable the Alpha feature"
+  tags:
+    - section1.6.4
+    - master
+    - notscored
+    - level2
+    
+- name: 1.6.5 Apply Security Context to Your Pods and Containers (Not Scored)
+  debug: msg="***Follow the Kubernetes documentation and apply security contexts to your pods. For a suggested list of security contexts, you may refer to the CIS Security Benchmark for Docker Containers."
+  tags:
+    - section1.6.5
+    - master
+    - notscored
+    - level2
+    
+- name: 1.6.6 Configure Image Provenance using ImagePolicyWebhook admission controller (Not Scored)
+  debug: msg="***Follow the Kubernetes documentation and setup image provenance."
+  tags:
+    - section1.6.6
+    - master
+    - notscored
+    - level2
+    
+- name: 1.6.7 Configure Network policies as appropriate (Not Scored)
+  debug: msg="***Follow the Kubernetes documentation and setup network policies as appropriate. For example, you could create a "default" isolation policy for a Namespace by creating a NetworkPolicy that selects all pods but does not allow any traffic:"
+  tags:
+    - section1.6.7
+    - master
+    - notscored
+    - level2
+    
+- name: 1.6.8 Place compensating controls in the form of PSP and RBAC for privileged containers usage (Not Scored)
+  debug: msg="***Ensure that these policies are configured as per your security requirements, with reference to section 1.7 of this document."
+  tags:
+    - section1.6.8
+    - master
+    - notscored
+    - level2
+    
+- name: 1.7.6 Do not admit root containers (Not Scored)
+  debug: msg="***check psp after setup the PSP."
+  tags:
+    - section1.7.6
+    - master
+    - scored
+    - level2
+    
+- name: 1.7.7 Do not admit containers with dangerous capabilities (Not Scored)
+  debug: msg="***check psp after setup the PSP."
+  tags:
+    - section1.7.7
+    - master
+    - scored
+    - level2
+  
+  

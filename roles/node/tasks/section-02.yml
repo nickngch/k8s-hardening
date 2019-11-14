@@ -1,0 +1,12 @@
+---
+
+- include: section-02-level-1.yml
+  tags:
+    - level-1
+    - section2-level-1
+
+- include: section-02-level-2.yml
+  tags:
+    - level-2
+    - section2-level-2
+

@@ -1,0 +1,8 @@
+---
+
+- hosts: master
+  become: no
+  remote_user: cloud-user
+  roles:
+    - master
+    #- node

@@ -1,0 +1,866 @@
+---
+#- name: 1.1.1 Ensure that the --anonymous-auth argument is set to false(Not Scored)
+#  lineinfile: 
+#    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+#    line: "    - --anonymous-auth=false"
+#    insertafter: "- kube-apiserver"
+#    state: present
+#  tags:
+#    - section1.1.1
+#    - master
+#    - notscored
+#    - level1
+
+- name: 1.1.1 Ensure that the --anonymous-auth argument is set to false(Not Scored)
+  debug: msg="*** Ignore this as we are using RBAC"
+  tags:
+    - section1.1.1
+    - master
+    - notscored
+    - level1
+
+- name: 1.1.2 Ensure that the --basic-auth-file argument is not set(Scored)
+  lineinfile: 
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "--basic-auth-file=*"
+    state: absent
+  tags:
+    - section1.1.2
+    - master
+    - scored
+    - level1
+
+- name: 1.1.3 Ensure that the --insecure-allow-any-token argument is not set(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "--insecure-allow-any-token"
+    state: absent
+  tags:
+    - section1.1.3
+    - master
+    - scored
+    - level1
+
+- name: 1.1.4 Ensure that the --kubelet-https argument is set to true(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "--kubelet-https"
+    state: absent
+  tags:
+    - section1.1.4
+    - master
+    - scored
+    - level1
+
+- name: 1.1.5 Ensure that the --insecure-bind-address argument is not set(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "--insecure-bind-address"
+    state: absent
+  tags:
+    - section1.1.5
+    - master
+    - scored
+    - level1
+
+- name: 1.1.6 Ensure that the --insecure-port argument is set to 0(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "    - --insecure-port="
+    line: "    - --insecure-port=0"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.6
+    - master
+    - scored
+    - level1
+
+- name: 1.1.7 Ensure that the --secure-port argument is not set to 0(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --secure-port=0"
+    state: absent
+  tags:
+    - section1.1.7
+    - master
+    - scored
+    - level1
+
+- name: 1.1.8 Ensure that the --profiling argument is set to false(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --profiling=false"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.8
+    - master
+    - scored
+    - level1
+
+#- name: 1.1.9 Ensure the that --repair-malformed-updates argument is set to false(Scored)
+#  lineinfile:
+#    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+#    line: "    - --repair-malformed-updates=false"
+#    insertafter: "- kube-apiserver"
+#    state: present
+#  tags:
+#    - section1.1.9
+#    - master
+#    - scored
+#    - level1
+
+- name: 1.1.9 Ensure the that --repair-malformed-updates argument is set to false(Scored)
+  debug: msg="*** This option is no longer available in kubernetes 1.14"
+  tags:
+    - section1.1.9
+    - master
+    - scored
+    - level1
+
+- name: 1.1.10 Ensure that the adminission control plugin AlwaysAdmit is not set(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --enable-admission-plugins=AlwaysAdmit"
+    state: absent
+  tags:
+    - section1.1.10
+    - master
+    - scored
+    - level1
+
+- name: 1.1.11 - 1.1.14, 1.1.24, 1.1.33 Ensure that the admission control plugin AlwaysPullImages, DenyEscalatingExec,SecurityContextDeny, NamespaceLifecycle, PodSecurityPolicy, NodeRestriction is set(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    #line: "    - --enable-admission-plugins=AlwaysPullImages,NodeRestriction,DenyEscalatingExec,SecurityContextDeny,NamespaceLifecycle,PodSecurityPolicy"
+    #insertafter: "- kube-apiserver"
+    regexp: "    - --enable-admission-plugins="
+    line: "    - --enable-admission-plugins=AlwaysPullImages,NodeRestriction,DenyEscalatingExec,NamespaceLifecycle,PodSecurityPolicy"
+    state: present
+  tags:
+    - section1.1.11
+    - section1.1.12
+    - section1.1.13
+    - section1.1.14
+    - section1.1.24
+    - section1.1.33
+    - master
+    - scored
+    - level1
+
+- name: pre 1.1.15 - create policies folder
+  file:
+    path: /etc/kubernetes/policies
+    state: directory
+    mode: 0750
+  tags:
+    - section1.1.15
+    
+- name: pre 1.1.15 - copy audit-policy yaml file
+  copy: src=audit-policy.yaml dest=/etc/kubernetes/policies/audit-policy.yaml owner=root group=root mode=0640
+  tags:
+    - section1.1.15
+  
+- name: pre 1.1.15 - Define audit-policy-file location
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --audit-policy-file=/etc/kubernetes/policies/audit-policy.yaml"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.15
+
+- name: pre 1.1.15 - create new mountpath for authpolicy
+  blockinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    insertafter: "volumeMounts:"
+    block: |2
+          - mountPath: /etc/kubernetes/policies
+            name: policies
+            readOnly: true
+          - mountPath: /var/log/apiserver
+            name: log
+    marker: "# {mark} ANSIBLE MANAGED BLOCK Insertion1"
+    state: present
+  tags:
+    - section1.1.15
+    
+- name: pre 1.1.15 - create new hostpath for authpolicy
+  blockinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    insertafter: "volumes:"
+    block: |4
+          - hostPath:
+              path: /etc/kubernetes/policies
+              type: DirectoryOrCreate
+            name: policies
+          - hostPath:
+              path: /var/log/apiserver
+              type: DirectoryOrCreate
+            name: log
+    marker: "# {mark} ANSIBLE MANAGED BLOCK insertion 2"
+    state: present
+  tags:
+    - section1.1.15
+    
+#- name: pre 1.1.15 - add --audit-policy-file=/etc/kubernetes/policies/audit-policy.yaml
+#  lineinfile:
+#    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+#    line: "    - --feature-gates=AdvancedAuditing=false"
+#    insertafter: "- kube-apiserver"
+#    state: present
+
+- name: 1.1.15 Ensure that the --audit-log-path argument is set as appropriate(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --audit-log-path=/var/log/apiserver/audit.log"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.15
+    - master
+    - scored
+    - level1
+
+- name: 1.1.16 Ensure that the --audit-log-maxage argument is set to 30 or as appropriate(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --audit-log-maxage=30"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.16
+    - master
+    - scored
+    - level1
+
+- name: 1.1.17 Ensure that the --audit-log-maxbackup argument is set to 10 or as appropriate(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --audit-log-maxbackup=10"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags: 
+    - section1.1.17
+    - master
+    - scored
+    - level1
+
+- name: 1.1.18 Ensure that the --audit-log-maxsize argument is set to 100 or as appropriate(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --audit-log-maxsize=100"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.18
+    - master
+    - scored
+    - level1
+
+- name: 1.1.19,1.1.32,1.1.39 Ensure that the --authorization-mode argument is not set to AlwaysAllow(Scored)
+  lineinfile: path=/etc/kubernetes/manifests/kube-apiserver.yaml regexp="    - --authorization-mode" line="    - --authorization-mode=Node,RBAC" state=present
+  tags:
+    - section1.1.19
+    - section1.1.32
+    - section1.1.39
+    - master
+    - scored
+    - level1
+
+- name: 1.1.20 Ensure that the --token-auth-file parameter is not set(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "    - --token-auth-file="
+    state: absent
+  tags:
+    - section1.1.20
+    - master
+    - scored
+    - level1
+
+- name: 1.1.21 Ensure that the --kubelet-certificate-authority argument is set as appropriate(Scored)
+  debug: msg="*** Manually setup this with CA information"
+  tags:
+    - section1.1.21
+    - master
+    - scored
+
+- name: 1.1.22 Ensure that the --kubelet-client-certificate and --kubelet-cleint-key arguments are set as appropriate(Scored)
+  debug: msg="*** Manually confirm these two configuration are pointing to the valid cert and key"
+  tags:
+    - section1.1.22
+    - master
+    - scored
+    - level1
+
+- name: 1.1.23 Ensure that the --service-account-lookup argument is set to true(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --service-account-lookup=true"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.23
+    - master
+    - scored
+    - level1
+
+- name: 1.1.25 Ensure that the --service-account-key-file argument is set as appropriate(Scored)
+  debug: msg="***Manually verify the file"
+  tags:
+    - section1.1.25
+    - master
+    - scored
+    - level1
+
+- name: 1.1.26 Ensure that the --etcd-certfile and --etcd-keyfile arguments are set as appropriate(Scored)
+  debug: msg="***Manually verify the cert and file"
+  tags:
+    - section1.1.26
+    - master
+    - scored
+    - level1
+
+- name: 1.1.27 Ensure that the admission control plugin ServiceAccount is set (Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: "--disable-admission-plugins=*ServiceAccount*"
+    state: absent
+  tags:
+      - section1.1.27
+      - master
+      - scored
+      - level1
+    
+- name: 1.1.28 Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate(Scored)
+  debug: msg="*** Manually verify the cert and key"
+  tags:
+    - section1.1.28
+    - master
+    - scored
+    - level1
+
+- name: 1.1.29 Ensure that the --client-ca-file argument is set as appropriate(Scored)
+  debug: msg="***Manually verify the file"
+  tags:
+    - section1.1.29
+    - master
+    - scored
+    - level1
+
+- name: 1.1.30 Ensure that the API Server only make use of Strong Cryptograhic Ciphers(Not Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+      - section1.1.30
+      - master
+      - notscored
+      - level1
+
+- name: 1.1.31 Ensure that the --etcd-cafile argument is set as appropriate(Scored)
+  debug: msg="***Manually verify the file"
+  tags:
+    - section1.1.31
+    - master
+    - scored
+    - level1
+
+- name: pre 1.1.34
+  copy: src=encryption.yaml dest=/etc/kubernetes/policies/encryption.yaml mode=0640
+  tags:
+    - section1.1.34
+
+- name: 1.1.34 Ensure that the --experimental-encryption-provider-config argument is set as appropriate(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    line: "    - --encryption-provider-config=/etc/kubernetes/policies/encryption.yaml"
+    insertafter: "- kube-apiserver"
+    state: present
+  tags:
+    - section1.1.34
+    - master
+    - scored
+    - level1
+
+- name: 1.1.35 Ensure that the encryption provider is set to aescbc(Scored)
+  debug: msg="*** Manually verify this"
+  tags:
+    - section1.1.35
+    - master
+    - scored
+    - level1
+
+- name: 1.1.36 Ensure that the admission control plugin EventRateLimit is set(Scored)
+  debug: msg="*** This plugin is deprecated"
+  tags:
+    - section1.1.36
+    - master
+    - scored
+    - level1
+
+- name: 1.1.37 Ensure that the AdvancedAuditing argument is not set to false(Scored)
+  debug: msg="***This should be enabled by default"
+  tags:
+    - section1.1.37
+    - master
+    - scored
+    - level1
+
+- name: 1.1.38 Ensure that the --request-timeout argument is set as appropriate(Scored)
+  debug: msg="***Manually consult and set this"
+  tags:
+    - section1.1.38
+    - master
+    - scored
+    - level1
+
+- name: 1.2.1 Ensure that the --profiling argument is set to false(Scored)
+  debug: msg="***this is deprecated"
+  tags:
+    - section1.2.1
+    - master
+    - scored
+    - level1
+
+- name: 1.2.2 Ensure that the --address argument is set to 127.0.0.1(Scored)
+  debug: msg="***This is deprecated should be bind-address"
+  tags:
+    - section1.2.2
+    - master
+    - scored
+    - level1
+
+- name: 1.3.1 Ensure that the --terminated-pod-gc-threshold argument is set as appropriate(Scored)
+  debug: msg="***manually set this to appropriate value"
+  tags:
+    - section1.3.1
+    - master
+    - scored
+    - level1
+
+- name: 1.3.2 Ensure that the --profiling argument is set to false(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    line: "    - --profiling=false"
+    insertafter: "- kube-controller-manager"
+    state: present
+  tags:
+    - section1.3.2
+    - master
+    - scored
+    - level1
+
+- name: 1.3.3 Ensure that the --use-service-account-credentials argument is set to true(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    regexp: "    - --use-service-account-credentials="
+    line: "    - --use-service-account-credentials=true"
+    insertafter: "- kube-controller-manager"
+    state: present
+  tags:
+    - section1.3.3
+    - master
+    - scored
+    - level1
+
+- name: 1.3.4 Ensure that the --service-account-private-key-file argument is set as appropriate(Scored)
+  debug: msg="***Manually verify this file"
+  tags:
+    - section1.3.4
+    - master
+    - scored
+    - level1
+
+- name: 1.3.5 Ensure that the --root-ca-file argument is set as appropriate(Scored)
+  debug: msg="***Manually verify this file"
+  tags:
+    - section1.3.5
+    - master
+    - scored
+    - level1
+
+- name: 1.3.6 Ensure that the RotateKubeletServerCertificate argument is set to true(Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    line: "    - --feature-gates=RotateKubeletServerCertificate=true"
+    insertafter: "- kube-controller-manager"
+    state: present
+  tags:
+    - section1.3.6
+    - master
+    - scored
+    - level1
+
+- name: 1.3.7 Ensure that the --address argument is set to 127.0.0.1 (Scored)
+  debug: msg="*** address is deprecated should be bind-address instead"
+  tags:
+    - section1.3.7
+    - master
+    - scored
+    - level1
+
+- name: 1.4.1 Ensure that the API server pod specification file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/manifests/kube-apiserver.yaml mode=0644
+  tags:
+    - section1.4.1
+    - master
+    - scored
+    - level1
+
+- name: 1.4.2 Ensure that the API server pod specification file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/manifests/kube-apiserver.yaml owner=root group=root
+  tags:
+    - section1.4.2
+    - master
+    - scored
+    - level1
+
+- name: 1.4.3 Ensure that the controller manager pod specification file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/manifests/kube-controller-manager.yaml mode=644
+  tags:
+    - section1.4.3
+    - master
+    - scored
+    - level1
+
+- name: 1.4.4 Ensure that the controller manager pod specification file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/manifests/kube-controller-manager.yaml owner=root group=root
+  tags:
+    - section1.4.4
+    - master
+    - scored
+    - level1
+
+- name: 1.4.5 Ensure that the schduler pod specification file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/manifests/kube-scheduler.yaml mode=0644
+  tags:
+    - section1.4.5
+    - master
+    - scored
+    - level1
+
+- name: 1.4.6 Ensure that the schduler pod specification file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/manifests/kube-scheduler.yaml  owner=root group=root
+  tags:
+    - section1.4.6
+    - master
+    - scored
+    - level1
+
+- name: 1.4.7 Ensure that the etcd pod specification file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/manifests/etcd.yaml mode=0644
+  tags:
+    - section1.4.7
+    - master
+    - scored
+    - level1
+
+- name: 1.4.8 Ensure that the etcd pod specification file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/manifests/etcd.yaml owner=root group=root
+  tags:
+    - section1.4.8
+    - master
+    - scored
+    - level1
+
+- name: 1.4.9 Ensure that the Container Network Interface file permissions are set to 644 or more restrictive (Not Scored)
+  debug: msg="*** Manually set the CNI permissions"
+  tags:
+    - section1.4.9
+    - master
+    - scored
+    - level1
+
+- name: 1.4.10 Ensure that the Container Network Interface file ownership is set to root:root (Not Scored)
+  debug: msg="*** Manually set the CNI ownership"
+  tags:
+    - section1.4.10
+    - master
+    - scored
+    - level1
+
+- name: 1.4.11 Ensure that the etcd data directory permissions are set to 700 or more restrictive (Scored)
+  file: path=/var/lib/etcd mode=0700
+  tags:
+    - section1.4.11
+    - master
+    - scored
+    - level1
+
+#- name: 1.4.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Scored)
+#  file: path=/var/lib/etcd owner=etcd group=etcd
+#  tags:
+#    - secton1.4.12
+#    - master
+#    - scored
+#    - level1
+
+- name: 1.4.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Scored)
+  debug: msg="*** no etcd user if setup with kubeadm"
+  tags:
+    - secton1.4.12
+    - master
+    - scored
+    - level1
+
+- name: 1.4.13 Ensure that the admin.conf file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/admin.conf mode=0644
+  tags:
+    - section1.4.13
+    - master
+    - scored
+    - level1
+
+- name: 1.4.14 Ensure that the admin.conf file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/admin.conf owner=root group=root
+  tags:
+    - section1.4.14
+    - master
+    - scored
+    - level1
+
+- name: 1.4.15 Ensure that the schduler.conf file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/scheduler.conf mode=0644
+  tags:
+    - section1.4.15
+    - master
+    - scored
+    - level1
+
+- name: 1.4.16 Ensure that the scheduler.conf file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/scheduler.conf owner=root group=root
+  tags:
+    - section1.4.16
+    - master
+    - scored
+    - level1
+
+- name: 1.4.17 Ensure that the controller-manager.conf file permissions are set to 644 or more restrictive (Scored)
+  file: path=/etc/kubernetes/controller-manager.conf mode=0644
+  tags:
+    - section1.4.17
+    - master
+    - scored
+    - level1
+
+- name: 1.4.18 Ensure that the controller-manager.conf file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/controller-manager.conf owner=root group=root
+  tags:
+    - section1.4.18
+    - master
+    - scored
+    - level1
+    
+- name: 1.4.19 Ensure that Kubernetes PKI directory and file ownership is set to root:root (Scored)
+  file: path=/etc/kubernetes/pki/ owner=root group=root
+  tags:
+    - section1.4.19
+    - master
+    - scored
+    - level1
+
+- name: 1.4.20 Ensure that the Kubernetes PKI certificate file permission are set to 644 or more restrictive (Scored)
+  find:
+    paths: /etc/kubernetes/pki
+    patterns: '*.crt'
+  register: pki_certs
+  tags:
+    - section1.4.20
+    - level1
+    - scored
+  
+- debug:
+    var: item.path
+  with_items: "{{ pki_certs.files }}"
+  tags:
+    - section1.4.20
+    - level1
+    - scored
+      
+- name: 1.4.20 Ensure that the Kubernetes PKI certificate file permission are set to 644 or more restrictive (Scored)
+  file:
+    path: "{{ item.path }}"
+    mode: 0644
+  with_items: "{{ pki_certs.files }}"
+  tags:
+    - section1.4.20
+    - level1
+    - scored
+
+- name: 1.4.21 Ensure that the Kubernetes PKI key file permission are set to 600 (Scored)
+  find:
+    paths: /etc/kubernetes/pki
+    patterns: '*.key'
+  register: pki_keys
+  tags:
+    - section1.4.21
+    - level1
+    - scored
+  
+- debug:
+    var: item.path
+  with_items: "{{ pki_keys.files }}"
+  tags:
+    - section1.4.21
+    - level1
+    - scored
+      
+- name: 1.4.21 Ensure that the Kubernetes PKI key file permission are set to 600 (Scored)
+  file:
+    path: "{{ item.path }}"
+    mode: 0600
+  with_items: "{{ pki_keys.files }}"
+  tags:
+    - section1.4.21
+    - level1
+    - scored
+
+
+- name: 1.5.1 Ensure that the --cert-file and --key-file arguments are set as appropriate (Scored)
+  debug: msg="*** Manually verify the files"
+  tags:
+    - section1.5.1
+    - master
+    - scored
+    - level1
+
+#- name: 1.5.2 Ensure that the --client-cert-auth argument is set to true (Scored)
+#  lineinfile:
+#    path: /etc/kubernetes/manifests/etcd.yaml
+#    line: "    - --client-cert-auth=true"
+#    insertafter: "- etcd"
+#    state: present
+#  tags:
+#    - section1.5.2
+#    - master
+#    - scored
+#    - level1
+
+- name: 1.5.2 Ensure that the --client-cert-auth argument is set to true (Scored)
+  debug: msg="***Should be enabled by default if setup with Kubeadm"
+  tags:
+    - section1.5.2
+    - master
+    - scored
+    - level1
+
+- name: 1.5.3 Ensure that the --auto-tls argument is not set to true (Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/etcd.yaml
+    line: "    - --auto-tls=false"
+    insertafter: "- etcd"
+    state: present
+  tags:
+    - section1.5.3
+    - master
+    - scored
+    - level1
+
+- name: 1.5.4 Ensure that the --peer-cert-file and --peer-key-file arguments are set as appropriate (Scored)
+  debug: msg="*** Manually verify the files"
+  tags:
+    - section1.5.4
+    - master
+    - scored
+    - level1
+
+- name: 1.5.5 Ensure that the --peer-client-cert-auth argument is set to true (Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/etcd.yaml
+    regexp: "    - --peer-client-cert-auth"
+    line: "    - --peer-client-cert-auth=true"
+    insertafter: "- etcd"
+    state: present
+  tags:
+    - section1.5.5
+    - master
+    - scored
+    - level1
+
+- name: 1.5.6 Ensure that the --peer-auto-tls argument is not set to true (Scored)
+  lineinfile:
+    path: /etc/kubernetes/manifests/etcd.yaml
+    line: "    - --peer-auto-tls=false"
+    insertafter: "- etcd"
+    state: present
+  tags:
+    - section1.5.6
+    - master
+    - scored
+    - level1
+
+- name: 1.6.1 Ensure that the cluster-admin role is only used where required (Not Scored)
+  debug: msg="*** Manually verify the role"
+  tags:
+    - section1.6.1
+    - master
+    - notscored
+    - level1
+
+- name: 1.6.2 Create administrative boundaries between resources using namespaces (Not Scored)
+  debug: msg="***Follow the documentation and create namespaces for objects in your deployment as you need them."
+  tags:
+    - section1.6.2
+    - master
+    - notscored
+    - level1
+    
+- name: pre psp
+  copy: src=privileged-psp-with-rbac.yaml dest=/opt/privileged-psp-with-rbac.yaml mode=777
+  tags:
+    - psp
+  
+- name: pre psp2
+  copy: src=restricted-psp-with-rbac.yaml dest=/opt/restricted-psp-with-rbac.yaml mode=777
+  tags:
+    - psp
+    
+- name: 1.7.1 - 1.7.5 Do not admit privileged containers (Not Scored)
+  command: "{{ item }} chdir=/opt/"
+  with_items:
+  - kubectl create -f ./privileged-psp-with-rbac.yaml
+  - kubectl create -f ./restricted-psp-with-rbac.yaml
+  become: no
+#  debug: msg="***Manually set the PSP"
+  tags:
+    - section1.7.1
+    - master
+    - notscored
+    - level1
+    
+# - name: 1.7.2 Do not admit containers wishing to share the host process ID namespace (Scored)
+  # debug: msg="***check psp after setup the PSP."
+  # tags:
+    # - section1.7.2
+    # - master
+    # - scored
+    # - level1
+    
+# - name: 1.7.3 Do not admit containers wishing to share the host IPC namespace (Scored)
+  # debug: msg="***check psp after setup the PSP."
+  # tags:
+    # - section1.7.3
+    # - master
+    # - scored
+    # - level1
+    
+# - name: 1.7.4 Do not admit containers wishing to share the host network namespace (Scored)
+  # debug: msg="***check psp after setup the PSP."
+  # tags:
+    # - section1.7.4
+    # - master
+    # - scored
+    # - level1
+    
+# - name: 1.7.5 Do not admit containers with allowPrivilegeEscalation (Scored)
+  # debug: msg="***check psp after setup the PSP."
+  # tags:
+    # - section1.7.5
+    # - master
+    # - scored
+    # - level1
