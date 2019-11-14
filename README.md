@@ -1,0 +1,1 @@
+- Based on CIS Benchmark v1.3.0# k8s-hardening
